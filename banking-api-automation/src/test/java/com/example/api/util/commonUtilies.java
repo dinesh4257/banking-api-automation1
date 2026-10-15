@@ -32,8 +32,7 @@ public class commonUtilies {
 
     public static int generateRandomNumber(int min, int max){
         Random random = new Random();
-        int num = min + random.nextInt(max); // 100 to 200 inclusive
-        //int randomNumber=new Random().nextInt(1000000, 10000000);
+        int num = min + random.nextInt(max);
         return num;
     }
     public static String selectRandomValueFromList(String[] array,int size){

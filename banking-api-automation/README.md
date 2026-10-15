@@ -51,7 +51,7 @@ Reports:
 
 ## Environment precedence
 1. JVM system property, for example `-Dbase.url=...`
-2. Environment variable, for example `BASE_URL`, `API_TOKEN`
+2. Environment variable, for example `BASE_URL`
 3. `src/test/resources/config/application.properties`
 
 ## Recommended next additions
