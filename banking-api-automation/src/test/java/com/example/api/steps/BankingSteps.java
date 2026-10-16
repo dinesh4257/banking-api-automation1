@@ -2,11 +2,13 @@ package com.example.api.steps;
 
 import com.example.api.client.BankingApiClient;
 import com.example.api.context.TestContext;
+import com.example.api.hooks.Hooks;
 import com.example.api.model.*;
 import com.example.api.util.*;
 import io.cucumber.java.en.*;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
+
 import java.util.UUID;
 
 public class BankingSteps {
@@ -19,8 +21,8 @@ public class BankingSteps {
     int customerNum1;
     int customerNum2;
 
-    public BankingSteps(TestContext context) { this.context = context; }
 
+    public BankingSteps(TestContext context) { this.context = context; }
 
     @Given("a new customer")
     public void newCustomer(){
@@ -33,7 +35,7 @@ public class BankingSteps {
         CustomerAddress customerAddress= new CustomerAddress("Star Park","Sus","Pune","Maharashtra","411021","India");
         ContactDetails contactDetails=new ContactDetails(lastName+"."+ firstName+ unique + "@example.com",phoneNumber,"String");
         Response res=client.addACustomer(new AddCustomer(firstName,lastName,commonUtilies.generateRandomString(4),customerNumber,status,customerAddress,contactDetails));
-        res.then().log().all();
+        res.then().log().ifValidationFails();
         context.setResponse(res);
     }
 
@@ -48,7 +50,7 @@ public class BankingSteps {
         CustomerAddress customerAddress= new CustomerAddress("Star Park","Sus","Pune","Maharashtra","411021","India");
         ContactDetails contactDetails=new ContactDetails(lastName+"."+ firstName+ unique + "@example.com",phoneNumber,"String");
         Response res=client.addACustomer(new AddCustomer(firstName,lastName,commonUtilies.generateRandomString(4),customerNumber,status,customerAddress,contactDetails));
-        res.then().log().all();
+        res.then().log().ifValidationFails();
         context.setResponse(res);
         return customerNumber;
     }
@@ -68,7 +70,7 @@ public class BankingSteps {
         CustomerAddress bankAddress= new CustomerAddress("Living Park","Wakad","Pune","Maharashtra","411057","India");
         BankInformation bankInformation=new BankInformation(branchName,branchCode,bankAddress,routingNumber);
         Response res=client.AddNewAccount( customerNumberVal,new CreateAccount(accountNumber,bankInformation,accountStatus,accountType,accountBalance,accountCreated));
-        res.then().log().all();
+        res.then().log().ifValidationFails();
         context.setResponse(res);
         return accountNumber;
     }
@@ -99,7 +101,7 @@ public class BankingSteps {
         CustomerAddress bankAddress= new CustomerAddress("Living Park","Wakad","Pune","Maharashtra","411057","India");
         BankInformation bankInformation=new BankInformation(branchName,branchCode,bankAddress,routingNumber);
         Response res=client.AddNewAccount( this.customerNumber,new CreateAccount(accountNumber,bankInformation,accountStatus,accountType,accountBalance,accountCreated));
-        res.then().log().all();
+        res.then().log().ifValidationFails();
         context.setResponse(res);
     }
 
@@ -109,49 +111,49 @@ public class BankingSteps {
         String unique = UUID.randomUUID().toString().substring(0, 8);
         String firstName= commonUtilies.generateRandomString(7);
         String lastName= commonUtilies.generateRandomString(8);
-        //customerNumber=commonUtilies.generateRandomNumber(99);
         String[] statusArray={"Single", "Married"};
         String status =commonUtilies.selectRandomValueFromList(statusArray,statusArray.length);
         String phoneNumber = String.valueOf((long)(Math.random() * 9000000000L) + 1000000000L);
         CustomerAddress customerAddress= new CustomerAddress("Star Park","Sus","Pune","Maharashtra","411021","India");
         ContactDetails contactDetails=new ContactDetails(lastName+"."+ firstName+ unique + "@example.com",phoneNumber,"String");
         Response res=client.updateCustomer(this.customerNumber,new AddCustomer(firstName,lastName,commonUtilies.generateRandomString(4),this.customerNumber,status,customerAddress,contactDetails));
-        res.then().log().all();
+        res.then().log().ifValidationFails();
         context.setResponse(res);
     }
 
     @When("Get Account Number detail")
     public void getAccount() {
         Response res=client.getAccount(this.accountNumber);
-        res.then().log().all();
+        res.then().log().ifValidationFails();
         context.setResponse(res);
     }
 
     @When("Get Non Account Number detail")
     public void getNonExistAccount() {
         Response res=client.getAccount(commonUtilies.generateRandomNumber(10000,15000));
-        res.then().log().all();
+        res.then().log().ifValidationFails();
         context.setResponse(res);
     }
 
     @When("Get the customer")
     public void getCustomer() {
         Response res=client.getCustomer(this.customerNumber);
-        res.then().log().all();
+        res.then().log().ifValidationFails();
+
         context.setResponse(res);
     }
 
     @When("Get All Customer Details")
     public void GetAllCustomer(){
         Response res=client.getAllCustomer();
-        res.then().log().all();
+        res.then().log().ifValidationFails();
         context.setResponse(res);
     }
 
     @When("Delete Customer Details")
     public void deleteCustomer() {
         Response res=client.deleteCustomer(this.customerNumber);
-        res.then().log().all();
+        res.then().log().ifValidationFails();
         context.setResponse(res);
     }
 
@@ -160,7 +162,7 @@ public class BankingSteps {
         TransferRequest transferRequest=new TransferRequest(FromAccount,ToAccount,amount);
 
         Response res=client.transfer(this.customerNum1,transferRequest);
-        res.then().log().all();
+        res.then().log().ifValidationFails();
         context.setResponse(res);
     }
 
@@ -181,10 +183,47 @@ public class BankingSteps {
         context.setResponse(client.transfer(this.customerNum1,new TransferRequest(FromAccount,ToAccount,amount)));
     }
 
+    @Then("Fetch values from Response {string}")
+    public void fetchValuesFromResponse(String responseKey){
+        String responseKeyValue=context.getResponse().jsonPath().get(responseKey).toString();
+        Hooks.log(responseKey +" : "+ responseKeyValue);
+    }
+
+    @Then("Calculate Response size")
+    public void responseSize(){
+        int resSize=context.getResponse().jsonPath().getString("customerNumber").length();
+        Hooks.log("Response Size is " +" : "+ resSize);
+    }
+
+    @Then("Check account balance {string}")
+    public void checkAccountBalance(String customerAccount){
+        float accountBalance;
+        int accountNumber;
+        Response res;
+        if (customerAccount.equalsIgnoreCase("FROMACCOUNT"))
+        {
+            res=client.getAccount(this.FromAccount);
+            context.setResponse(res);
+        }
+        if (customerAccount.equalsIgnoreCase("TOACCOUNT"))
+        {
+            res=client.getAccount(this.ToAccount);
+            context.setResponse(res);
+        }
+
+        accountNumber=context.getResponse().jsonPath().getInt("accountNumber");
+        accountBalance=context.getResponse().jsonPath().getFloat("accountBalance");
+        Hooks.log("For accountNumber " +accountNumber +" Account balance is " +" : "+ accountBalance);
+
+    }
+
+
     @Then("the response status should be {int}")
     public void verifyStatus(int status) {
         Assertions.assertEquals(status, context.getResponse().statusCode(), context.getResponse().asPrettyString());
     }
+
+
 
     @Then("the transfer status should be {string}")
     public void verifyTransferStatus(String expected) {
