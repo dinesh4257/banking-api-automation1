@@ -1,5 +1,24 @@
 Feature: New Customer details
 
+  Scenario: Customer Lifecycle
+    Given a new customer
+    Then the response status should be 201
+    And Get the customer
+    Then the response status should be 200
+    And Fetch values from Response 'firstName'
+    And Fetch values from Response 'lastName'
+    And I update the customer
+    Then the response status should be 200
+    And Get the customer
+    Then the response status should be 200
+    And Fetch values from Response 'firstName'
+    And Fetch values from Response 'lastName'
+    And Delete Customer Details
+    Then the response status should be 200
+    And Get the customer
+    Then the response status should be 404
+
+
   Scenario: Create a new customer and Account
     Given a new customer
     Then the response status should be 201

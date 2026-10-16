@@ -10,3 +10,6 @@ Automate an end-to-end customer lifecycle scenario, a successful transfer scenar
 and a rejected transfer scenario where the amount exceeds the account balance.
 Externalize the base URL configuration. Avoid hard-coded generated identifiers. Use POJOs and reusable REST Assured 
 specifications. Support execution through Cucumber tags and generate HTML and JSON reports. Include documentation explaining the project structure, execution commands, assumed endpoints, expected response fields, and changes required to align the suite with the actual OpenAPI contract.
+
+Observation :
+The Get Customer request is not retrieving all account details mapped to the customer.

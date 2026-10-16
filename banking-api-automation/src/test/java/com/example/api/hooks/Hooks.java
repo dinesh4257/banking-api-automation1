@@ -23,7 +23,6 @@ public class Hooks {
     }
 
 
-
     @After public void afterScenario(Scenario scenario) {
         if (scenario.isFailed() && context.getResponse() != null) {
             scenario.attach(context.getResponse().asPrettyString(), "application/json", "Last API response");
